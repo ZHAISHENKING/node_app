@@ -1,8 +1,13 @@
 const http = require('http')
 const fs = require('fs')
+const rs2 = fs.createReadStream('../04_io/image.jpg')
+const ws2 = fs.createWriteStream('./01.jpg')
+
+rs2.pipe(ws2)
+
 const server = http.createServer((request, response) => {
   // 显示首页
-  const {url, method} = request;
+  const {url, method, headers} = request;
   if (url === '/' && method === 'GET') {
     fs.readFile('index.html', (err, data) => {
       if (err) {
@@ -16,6 +21,8 @@ const server = http.createServer((request, response) => {
   } else if (url === '/users' && method === 'GET') {
     response.writeHead(200, {'Content-Type': 'application/json'})
     response.end(JSON.stringify({name: 'tom', age: 20}))
+  } else if (method === 'GET' && headers.accept.indexOf('image/*') !== -1) {
+    fs.createReadStream('.' + url).pipe(response)
   } else {
     response.statusCode = 404;
     response.setHeader('Content-Type', 'text/plain;charset=utf-8');
